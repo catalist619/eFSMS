@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login SAAD</title>
+    <title>Login</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -148,7 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 </div>
     <div class="container">
         <div class="login-form">
-            <h2>Sign in to eFSMS</h2>
+            <h2>Sign in to eFSMS catalist</h2>
             <?php if ($login_error_message): ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo $login_error_message; ?>
