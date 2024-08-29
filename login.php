@@ -148,7 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 </div>
     <div class="container">
         <div class="login-form">
-            <h2>Sign in to eFSMS catalist</h2>
+            <h2>Sign in to eFSMS</h2>
             <?php if ($login_error_message): ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo $login_error_message; ?>
