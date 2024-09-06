@@ -92,10 +92,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-        background-image: url('image/a0.jpg');
+        background-image: url('image/login5.82c7abe0e62ee8b9.png');
         background-repeat: no-repeat;
         background-position: center;
-        background-size: auto;
+        background-size: cover;
+        background-position-y: 0px;
         }
         .login-form {
             max-width: 600px;

@@ -41,10 +41,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="css/style.css">
     <style>
         body{
-        background-image: url('image/a0.jpg');
+        background-image: url('image/login5.82c7abe0e62ee8b9.png');
         background-repeat: no-repeat;
         background-position: center;
-        background-size: auto;
+        background-size: cover;
+        background-position-y: 0px;
         }
         .registration-form {
     max-width: 600px;

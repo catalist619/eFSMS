@@ -1,16 +1,19 @@
 <?php
 session_start();
-include 'conn.php'; // Include database connection
+include 'conn.php'; // Include your database connection file
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) || $_SESSION['privilege'] !== 'student') {
-    header("Location: login.php");
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php"); // Redirect to login if not logged in
     exit();
 }
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get form data
+// Initialize variables
+$errors = [];
+$upload_dir = 'uploads/'; // Directory to store uploaded files
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve form data
     $registration_no = $_POST['registration_no'];
     $university_name = $_POST['university_name'];
     $course = $_POST['course'];
@@ -18,78 +21,100 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $start_field = $_POST['start_field'];
     $end_field = $_POST['end_field'];
     $area_specialization = $_POST['area_specialization'];
-    
+
     // Handle file upload
-    $upload_request_letter = $_FILES['upload_request_letter']['name'];
-    $upload_dir = 'uploads/';
-    $upload_file = $upload_dir . basename($upload_request_letter);
-    $upload_success = move_uploaded_file($_FILES['upload_request_letter']['tmp_name'], $upload_file);
+    if (isset($_FILES['upload_request_letter']) && $_FILES['upload_request_letter']['error'] == UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['upload_request_letter']['tmp_name'];
+        $file_name = $_FILES['upload_request_letter']['name'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-    if (!$upload_success) {
-        $_SESSION['message'] = 'File upload failed.';
-        $_SESSION['message_type'] = 'error';
-        header('Location: request_field.php');
-        exit();
-    }
-
-    // Check available field chances
-    $chance_query = "SELECT available_chance FROM FieldChance LIMIT 1"; // Assuming there's only one row
-    $chance_result = $conn->query($chance_query);
-    
-    if ($chance_result && $chance_row = $chance_result->fetch_assoc()) {
-        if ($chance_row['available_chance'] > 0) {
-            // Decrease the field chance by 1
-            $update_chance_query = "UPDATE FieldChance SET available_chance = available_chance - 1";
-            if ($conn->query($update_chance_query)) {
-                // Insert data into Request table
-                $student_id = $_SESSION['user_id']; // Get the logged-in user ID
-                $status = 'Pending'; // Default status
-
-                $query = "INSERT INTO Request (student_id, registration_no, university_name, course, year_of_study, start_field, end_field, area_specialization, upload_request_letter, status) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-                if ($stmt = $conn->prepare($query)) {
-                    $stmt->bind_param('isssssssss', $student_id, $registration_no, $university_name, $course, $year_of_study, $start_field, $end_field, $area_specialization, $upload_request_letter, $status);
-
-                    if ($stmt->execute()) {
-                        $_SESSION['message'] = 'Request submitted successfully!';
-                        $_SESSION['message_type'] = 'success';
-                    } else {
-                        $_SESSION['message'] = 'Failed to submit request.';
-                        $_SESSION['message_type'] = 'error';
-                    }
-                    $stmt->close();
-                } else {
-                    $_SESSION['message'] = 'Database query failed.';
-                    $_SESSION['message_type'] = 'error';
-                }
-            } else {
-                $_SESSION['message'] = 'Failed to update field chance.';
-                $_SESSION['message_type'] = 'error';
-            }
+        // Validate file extension
+        if ($file_ext != 'pdf') {
+            $errors[] = 'Only PDF files are allowed.';
         } else {
-            $_SESSION['message'] = 'No available chances left.';
-            $_SESSION['message_type'] = 'error';
+            // Generate a unique filename
+            $new_file_name = uniqid('request_', true) . '.' . $file_ext;
+            $file_destination = $upload_dir . $new_file_name;
+
+            // Move the uploaded file to the destination
+            if (!move_uploaded_file($file_tmp, $file_destination)) {
+                $errors[] = 'Failed to move uploaded file.';
+            }
         }
     } else {
-        $_SESSION['message'] = 'Failed to fetch field chances.';
-        $_SESSION['message_type'] = 'error';
+        $errors[] = 'No file uploaded or there was an upload error.';
     }
 
-    mysqli_close($conn);
+    // If there are no errors, proceed to insert data into the database
+    if (empty($errors)) {
+        $student_id = $_SESSION['user_id']; // Get student ID from session
+        $status = 'Pending'; // Default status
 
-    header('Location: student_dashboard.php');
-    exit();
+        $conn->begin_transaction(); // Start transaction
+
+        try {
+            // Insert request data
+            $sql = "INSERT INTO Request (student_id, registration_no, university_name, course, year_of_study, start_field, end_field, area_specialization, upload_request_letter, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param(
+                "isssssssss",
+                $student_id,
+                $registration_no,
+                $university_name,
+                $course,
+                $year_of_study,
+                $start_field,
+                $end_field,
+                $area_specialization,
+                $new_file_name, // Use the new filename here
+                $status
+            );
+
+            if (!$stmt->execute()) {
+                throw new Exception('Failed to submit request.');
+            }
+
+            // Decrease the available chance by 1
+            $sql_chance = "UPDATE FieldChance SET available_chance = available_chance - 1 ORDER BY id DESC LIMIT 1";
+            if (!$conn->query($sql_chance)) {
+                throw new Exception('Failed to update available chance.');
+            }
+
+            $conn->commit(); // Commit transaction
+
+            $_SESSION['message'] = 'Request submitted successfully!';
+            $_SESSION['message_type'] = 'success';
+
+        } catch (Exception $e) {
+            $conn->rollback(); // Rollback transaction on error
+            $_SESSION['message'] = $e->getMessage();
+            $_SESSION['message_type'] = 'error';
+        }
+
+        $stmt->close();
+        $conn->close();
+
+        header("Location: student_dashboard.php"); // Redirect to the same page to show the message
+        exit();
+    } else {
+        // If there are errors, store them in session and redirect to the same page
+        $_SESSION['errors'] = $errors;
+        header("Location: request_field.php");
+        exit();
+    }
 }
-?>
 
+// Include this PHP block at the top of your PHP file
+$date_today = date('Y-m-d'); // Today's date
+?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Field</title>
 
     <!-- Montserrat Font -->
@@ -143,9 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p>Welcome to your eFSMS</p>
             </div>
             <div class="header-left">
-                <!-- <span class="material-icons-outlined">notifications</span>
-                <span class="material-icons-outlined">email</span>
-                <span class="material-icons-outlined">account_circle</span> -->
                 <span class="material-icons-outlined"><a href="./logout.php">logout</a></span>
             </div>
         </header>
@@ -173,6 +195,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <a href="feedback.php">
                     <li class="sidebar-list-item">
                         <span class="material-icons-outlined">swap_horiz</span> Feedback
+                    </li>
+                </a>
+                <a href="student_resetpass.php">
+                    <li class="sidebar-list-item">
+                        <span class="material-icons-outlined">password</span> Reset Password
                     </li>
                 </a>
             </ul>
@@ -217,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                                 <div class="mb-3">
                                     <label for="start_field" class="form-label">Start Date</label>
-                                    <input type="date" class="form-control" id="start_field" name="start_field" required>
+                                    <input type="date" class="form-control" id="start_field" name="start_field" value="<?php echo $date_today; ?>" min="<?php echo $date_today; ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="end_field" class="form-label">End Date</label>
@@ -244,27 +271,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
                 </div>
-                <!-- End Main -->
             </div>
-            <?php mysqli_close($conn); ?>
+
             <!-- Custom JS -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    const toast = document.getElementById('toast');
-                    
-                    if (toast) {
-                        // Display the toast message
-                        toast.classList.add('show');
-                        
-                        // Hide the toast message after 3 seconds
-                        setTimeout(() => {
-                            toast.classList.remove('show');
-                        }, 3000);
-                    }
+                    const startField = document.getElementById('start_field');
+                    const endField = document.getElementById('end_field');
+
+                    // Set the minimum end date to be one day after the selected start date
+                    startField.addEventListener('change', function () {
+                        const startDate = new Date(startField.value);
+                        const endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 1);
+                        endField.value = endDate.toISOString().split('T')[0];
+                        endField.min = endDate.toISOString().split('T')[0];
+                    });
+
+                    // Initialize end date based on today's date
+                    const today = new Date();
+                    const nextDay = new Date(today);
+                    nextDay.setDate(today.getDate() + 1);
+                    endField.min = nextDay.toISOString().split('T')[0];
                 });
             </script>
         </main>
+        <!-- End Main -->
     </div>
 </body>
-
 </html>

@@ -106,6 +106,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <span class="material-icons-outlined">feedback</span> Feedback
                     </li>
                 </a>
+                <a href="admin_resetpass.php">
+                    <li class="sidebar-list-item">
+                        <span class="material-icons-outlined">password</span> Reset Password
+                    </li>
+                </a>
             </ul>
         </aside>
         <!-- End Sidebar -->
