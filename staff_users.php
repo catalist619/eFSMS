@@ -61,7 +61,7 @@ $result_staff = $conn->query($query_staff);
         <!-- Header -->
         <header class="header">
             <div class="header-left">
-                <p>Welcome to the Admin Dashboard</p>
+                <p>Welcome to the Staff Dashboard</p>
             </div>
             <div class="header-right">
                 <!-- <span class="material-icons-outlined">notifications</span>
@@ -76,7 +76,7 @@ $result_staff = $conn->query($query_staff);
         <aside id="sidebar">
             <div class="sidebar-title">
                 <div class="sidebar-brand">
-                    <span class="material-icons-outlined">admin_panel_settings</span> Admin Panel
+                    <span class="material-icons-outlined">admin_panel_settings</span> Staff Panel
                 </div>
             </div>
 
@@ -86,7 +86,7 @@ $result_staff = $conn->query($query_staff);
                         <span class="material-icons-outlined">dashboard</span> Dashboard
                     </li>
                 </a>
-                <!-- <a href="admin_student_request.php">
+                <!-- <a href="student_request.php">
                     <li class="sidebar-list-item">
                         <span class="material-icons-outlined">description</span> Student Requests
                     </li>
@@ -99,6 +99,11 @@ $result_staff = $conn->query($query_staff);
                 <a href="staff_feedback.php">
                     <li class="sidebar-list-item">
                         <span class="material-icons-outlined">feedback</span> Feedback
+                    </li>
+                </a>
+                <a href="staff_resetpass.php">
+                    <li class="sidebar-list-item">
+                        <span class="material-icons-outlined">password</span> Reset Password
                     </li>
                 </a>
             </ul>

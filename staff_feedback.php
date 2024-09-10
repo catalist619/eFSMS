@@ -71,7 +71,7 @@ if (!$result_feedback) {
         <!-- Header -->
         <header class="header">
             <div class="header-left">
-                <p>Welcome to the Admin Dashboard</p>
+                <p>Welcome to the Staff Dashboard</p>
             </div>
             <div class="header-right">
                 <!-- <span class="material-icons-outlined">notifications</span>
@@ -86,7 +86,7 @@ if (!$result_feedback) {
         <aside id="sidebar">
             <div class="sidebar-title">
                 <div class="sidebar-brand">
-                    <span class="material-icons-outlined">admin_panel_settings</span> Admin Panel
+                    <span class="material-icons-outlined">admin_panel_settings</span> Staff Panel
                 </div>
             </div>
 
@@ -109,6 +109,11 @@ if (!$result_feedback) {
                 <a href="staff_feedback.php">
                     <li class="sidebar-list-item">
                         <span class="material-icons-outlined">feedback</span> Feedback
+                    </li>
+                </a>
+                <a href="staff_resetpass.php">
+                    <li class="sidebar-list-item">
+                        <span class="material-icons-outlined">password</span> Reset Password
                     </li>
                 </a>
             </ul>
