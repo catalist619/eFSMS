@@ -81,6 +81,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $stmt_staff->close();
     $conn->close();
 }
+
+// Display registration error if it exists
+if (isset($_SESSION['registration_error'])) {
+    $login_error_message = $_SESSION['registration_error'];
+    unset($_SESSION['registration_error']); // Clear the error after displaying
+}
 ?>
 
 <!DOCTYPE html>
@@ -92,11 +98,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-        background-image: url('image/login5.82c7abe0e62ee8b9.png');
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: cover;
-        background-position-y: 0px;
+            background-image: url('image/login5.82c7abe0e62ee8b9.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-position-y: 0px;
         }
         .login-form {
             max-width: 600px;
@@ -143,10 +149,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     </style>
 </head>
 <body>
-                    <div class="chance-indicator">
-                    Available chance
-                    <div class="chance-number"><?php echo $available_chance; ?></div>
-                </div>
+    <div class="chance-indicator">
+        Available chance
+        <div class="chance-number"><?php echo $available_chance; ?></div>
+    </div>
     <div class="container">
         <div class="login-form">
             <h2>Sign in to eFSMS</h2>

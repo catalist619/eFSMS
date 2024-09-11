@@ -85,18 +85,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/dash_style.css">
 
+    <style>
+                        /* General styling for header */
+                        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left p {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #343a40;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Profile Menu Icon */
+        .profile-menu {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .profile-menu .material-icons-outlined {
+            font-size: 36px;
+            color: #343a40;
+            transition: color 0.3s ease;
+        }
+
+        .profile-menu:hover .material-icons-outlined {
+            color: #007bff;
+        }
+
+        /* Profile Dropdown Menu */
+        .profile-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: #fff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            width: 200px;
+            z-index: 100;
+            display: none; /* Initially hidden */
+        }
+
+        .profile-dropdown a {
+            display: flex;
+            align-items: center;
+            color: #343a40;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .profile-dropdown a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .profile-dropdown a span {
+            margin-right: 10px;
+        }
+
+        /* Table Styling */
+        .table-striped {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="grid-container">
-        <!-- Header -->
-        <header class="header">
+         <!-- Header -->
+         <header class="header">
             <div class="header-left">
-                <p>Welcome to your eFSMS</p>
+                <p>Welcome to the Student Dashboard</p>
             </div>
-            <div class="header-left">
-                <span class="material-icons-outlined"><a href="./logout.php">logout</a></span>
+            <div class="header-right">
+                <div class="profile-menu" id="profile-icon">
+                    <span class="material-icons-outlined">account_circle</span>
+                </div>
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <a href="student_resetpass.php">
+                        <span class="material-icons-outlined">password</span> Reset Password
+                    </a>
+                    <a href="logout.php">
+                        <span class="material-icons-outlined">logout</span> Logout
+                    </a>
+                </div>
             </div>
         </header>
         <!-- End Header -->
@@ -126,11 +214,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="feedback.php">
             <li class="sidebar-list-item">
                 <span class="material-icons-outlined">swap_horiz</span> Feedback
-            </li>
-        </a>
-        <a href="student_resetpass.php">
-            <li class="sidebar-list-item">
-                <span class="material-icons-outlined">password</span> Reset Password
             </li>
         </a>
     </ul>
@@ -180,6 +263,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Custom JS -->
     <script src="js/bootstrap.min.js"></script>
+
+                <!-- JavaScript for Profile Dropdown -->
+                <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var profileIcon = document.getElementById('profile-icon');
+            var profileDropdown = document.getElementById('profile-dropdown');
+
+            profileIcon.addEventListener('click', function() {
+                profileDropdown.style.display = (profileDropdown.style.display === 'none' || profileDropdown.style.display === '') 
+                    ? 'block' 
+                    : 'none';
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!profileIcon.contains(event.target) && !profileDropdown.contains(event.target)) {
+                    profileDropdown.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 

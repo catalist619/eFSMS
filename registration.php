@@ -1,4 +1,5 @@
 <?php
+session_start(); // Start the session to use $_SESSION
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -12,9 +13,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash the password
     $privilege = 'student'; // Default privilege as student
 
+    // Check if the email already exists in the database
+    $checkEmailSQL = "SELECT email FROM Student WHERE email = ?";
+    $stmt = $conn->prepare($checkEmailSQL);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0) {
+        // Email already exists, set error message in session
+        $_SESSION['registration_error'] = "Email already exists. Please log in.";
+        header("Location: login.php");
+        exit();
+    }
+
+    // $stmt->close();
+
+    // Proceed with inserting new record if email doesn't exist
     $sql = "INSERT INTO Student (first_name, middle_name, surname, email, phone_number, password, privilege)
             VALUES (?, ?, ?, ?, ?, ?, ?)";
-
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssssss", $first_name, $middle_name, $surname, $email, $phone_number, $password, $privilege);
 
@@ -29,6 +46,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
+
+
+
 
 
 <!DOCTYPE html>
